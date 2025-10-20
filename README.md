@@ -21,6 +21,26 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
     - If `--date` is not provided the script uses the current UTC time as the WARC date.
     - The script attempts to guess MIME types using Python's `mimetypes` module; unknown types default to `application/octet-stream`.
 
+  - `merge_warcs.py`
+    - Description: Recursively finds `.warc` and `.warc.gz` files in a directory and merges their records into a single gzipped WARC file. Useful for consolidating many small WARC archives into one file for easier storage or processing.
+    - Basic usage:
+
+      ```bash
+      python3 merge_warcs.py <input_dir> <output_file.warc.gz>
+      ```
+
+      Example:
+
+      ```bash
+      python3 merge_warcs.py warcs/ merged.warc.gz
+      ```
+
+    - Notes:
+      - The script preserves original records and headers. It writes records exactly as read using `warcio`'s ArchiveIterator and WARCWriter.
+      - Input files are detected case-insensitively by the extensions `.warc` and `.warc.gz`.
+      - If you need regenerated WARC-Record-IDs, normalized timestamps, or header changes, the script can be extended to transform records before writing.
+      - Ensure the `warcio` package is installed (`pip install warcio`). If `warcio` isn't available the script will raise an error and print installation advice.
+
 ## Requirements
 
 - Python 3.7 or newer
