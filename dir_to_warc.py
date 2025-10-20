@@ -29,6 +29,10 @@ input_dir = args.input_dir
 output_file = args.output_file
 
 
+# Ensure .shtml files are recognized as HTML
+mimetypes.add_type('text/html', '.shtml')
+
+
 # Use provided date or default to now in ISO format
 warc_date = args.date or datetime.utcnow().isoformat(timespec='seconds') + 'Z'
 
@@ -47,7 +51,8 @@ with open(output_file, 'wb') as output:
             with open(path, 'rb') as f:
                 content = f.read()
 
-            content_type = mimetypes.guess_type(fname)[0] or 'application/octet-stream'
+            # guess_type is case-sensitive on some platforms; normalize to lowercase
+            content_type = mimetypes.guess_type(fname.lower())[0] or 'application/octet-stream'
 
             http_headers = StatusAndHeaders('200 OK', [('Content-Type', content_type)], protocol='HTTP/1.1')
 
