@@ -101,6 +101,7 @@ celerybeat-schedule
 # outputs and temporary data
 out/
 input_files/
+markdown_pages/
 *.sqlite
 *.db
 
