@@ -54,8 +54,8 @@ with open(WARC_FILE, "rb") as stream:
                 markdown_content = converter.handle(html_content)
 
                 with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(f"# Source URL\n{url}\n\n")
-                    f.write(f"# Archived at\n{warc_date}\n\n")
+                    # Write a single metadata line in the format: waybackdate/original-url
+                    f.write(f"{wayback_date}/{url}\n\n")
                     f.write(markdown_content)
 
                 count += 1
