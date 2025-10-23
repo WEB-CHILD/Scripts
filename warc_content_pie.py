@@ -10,6 +10,12 @@ parser.add_argument('--output', '-o', help='Optional path to save the pie chart 
 parser.add_argument('--min-percent', type=float, default=1.0, help='Minimum percent threshold; types below this are grouped into "Other" (default: 1.0)')
 args = parser.parse_args()
 
+# Define colors here. Set PALETTE to either:
+# - a matplotlib colormap name (string) to sample colors from, e.g. 'tab20'
+# - a Python list of color strings (e.g. ['#e41a1c', '#377eb8', '#4daf4a'])
+# - None to use matplotlib defaults
+PALETTE = 'Pastel2'
+
 warc_file_path = args.warc_file
 
 # Collect MIME types
@@ -49,7 +55,20 @@ if other_count > 0:
 
 # Create pie chart
 plt.figure(figsize=(10, 8))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+# Determine colors from PALETTE defined in the file
+colors = None
+if PALETTE:
+    if isinstance(PALETTE, (list, tuple)):
+        colors = list(PALETTE)
+    elif isinstance(PALETTE, str):
+        try:
+            cmap = plt.get_cmap(PALETTE)
+            colors = [cmap(i / max(1, len(sizes) - 1)) for i in range(len(sizes))]
+        except Exception:
+            # If colormap lookup fails, leave colors as None to use defaults
+            colors = None
+
+plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140, colors=colors)
 plt.title('MIME Type Distribution in WARC File')
 plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular
 if args.output:
