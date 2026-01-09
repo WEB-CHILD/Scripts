@@ -74,6 +74,31 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
   - Notes:
     - The script uses `html2text` to convert HTML to Markdown. Install it with `pip install html2text`.
 
+- `harvest_comparator.py`
+  - Description: Test script which primary use is intended for testing the limiter function in our fork of python-wayback-machine-downloader during implementation.
+  In general it compares two harvest directories and visualizes the distribution of captured snapshots over time. Analyzes file statistics and generates histograms comparing harvest patterns between two directories (e.g., with and without rate limiting).
+  - Basic usage:
+
+    ```bash
+    python3 harvest_comparator.py <original_dir> <modified_dir>
+    ```
+
+    Example:
+
+    ```bash
+    python3 harvest_comparator.py harvest_unlimited/ harvest_limited/
+    ```
+
+  - Features:
+    - Collects and analyzes file information (count, total size, file types) for both directories
+    - Extracts snapshot dates from `waybackup_snapshots` folder structure
+    - Generates side-by-side histograms showing harvest date distribution
+    - Useful for comparing harvest results before/after applying rate limiters or other modifications
+  - Notes:
+    - Requires `pandas` and `matplotlib` packages. Install with `pip install pandas matplotlib`.
+    - Expects directories to contain a `waybackup_snapshots` subdirectory with snapshot data organized by site and timestamp.
+    - Snapshot timestamps are expected to be 14-digit strings in `YYYYMMDDHHmmss` format.
+
 ## Requirements
 
 - Python 3.7 or newer
