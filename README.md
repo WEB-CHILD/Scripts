@@ -99,6 +99,31 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
     - Expects directories to contain a `waybackup_snapshots` subdirectory with snapshot data organized by site and timestamp.
     - Snapshot timestamps are expected to be 14-digit strings in `YYYYMMDDHHmmss` format.
 
+- `ia_stats_fetcher.py`
+  - Description: First VERY RAW and unpolished stab at fetching Internet Archive (Wayback Machine) statistics for a list of URLs. Queries the CDX API to retrieve capture counts by MIME type and unique URL counts for each site.
+  - Basic usage:
+
+    ```bash
+    python3 ia_stats_fetcher.py <input.csv> <output.csv> [--parallel] [--delay SECONDS] [--workers N]
+    ```
+
+    Example:
+
+    ```bash
+    python3 ia_stats_fetcher.py urls.csv ia_stats.csv --parallel --delay 1 --workers 5
+    ```
+
+  - Features:
+    - Queries the Internet Archive CDX API for URL captures
+    - Counts captures by MIME type (text/html, image/jpeg, image/png)
+    - Tracks unique URLs captured for each site
+    - Supports sequential or parallel processing with configurable delays and worker threads
+    - Outputs results to CSV format
+  - Notes:
+    - Requires `pandas` and `requests` packages. Install with `pip install pandas requests`.
+    - Input CSV should have URLs in the first column.
+    - **⚠️ Disclaimer**: This script has known timeout issues and is be buggy. The CDX API requests may timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel and unfortunately also with large sites harvested many time. 
+
 ## Requirements
 
 - Python 3.7 or newer
