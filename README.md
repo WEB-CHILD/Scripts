@@ -122,12 +122,33 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
   - Notes:
     - Requires `pandas` and `requests` packages. Install with `pip install pandas requests`.
     - Input CSV should have URLs in the first column.
-    - **⚠️ Disclaimer**: This script has known timeout issues and is be buggy. The CDX API requests may timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel and unfortunately also with large sites harvested many time. 
+    - **⚠️ Disclaimer**: This script has known timeout issues and may be buggy. The CDX API requests can timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel, or with very large sites.
+
+- `multible_catagory_matcher.sql`
+  - Description: SQLite SQL script for matching and categorizing URLs across multiple category labels in the corpus database. Intended to be run interactively inside a SQLite GUI (for example `DB Browser for SQLite`) against the `corpus-120b-wayback_url.db` schema.
+  - Basic usage:
+
+    1. Open `DB Browser for SQLite`.
+    2. Open the database file `corpus-120b-wayback_url.db` (see Requirements below for location).
+    3. Switch to the "Execute SQL" tab and run the contents of `multible_catagory_matcher.sql`.
+
+    Example (run inside DB Browser for SQLite):
+
+    ```sql
+    -- Paste the SQL file contents into the Execute SQL tab and run
+    ```
+
+  - Notes / Requirements for running:
+    - Runs in `DB Browser for SQLite` (or any SQLite client that can execute multi-statement SQL scripts).
+    - Built to work with the structure of the `corpus-120b-wayback_url.db` database. Do not run on different schemas without adapting the queries.
+    - The `corpus-120b-wayback_url.db` can be retrieved from OneDrive under `/Data/Databases/` in the project's storage.
+    - Always backup the database before running scripts that modify data.
 
 ## Requirements
 
 - Python 3.7 or newer
 - The `warcio` package (install with `pip install warcio`)
+ - `DB Browser for SQLite` (or any SQLite client) — required to run `multible_catagory_matcher.sql`. The `corpus-120b-wayback_url.db` used by the script can be retrieved from OneDrive under `/Data/Databases/`.
 
 It's recommended to run the scripts inside a virtual environment:
 
