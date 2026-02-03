@@ -2,6 +2,38 @@ import os
 import re
 from datetime import datetime
 from warcio.archiveiterator import ArchiveIterator
+"""markdown_render_html_from_warc
+
+Convert HTML responses inside a WARC/WARC.GZ archive into individual
+Markdown files.
+
+Behavior:
+- Scans each WARC `response` record and selects those with a
+    `Content-Type` containing `text/html`.
+- Converts the HTML payload to Markdown using `html2text`.
+- Writes one `.md` file per page under the configured output
+    directory. Each file begins with a single metadata line in the
+    format `waybackdate/original-url` followed by the converted
+    Markdown body.
+
+Output filename format:
+- `{waybackdate}_{safe_url}.md` where `waybackdate` is derived
+    from the `WARC-Date` header in `YYYYmmddHHMMSS` form or
+    `unknown_date` when parsing fails. `safe_url` is a filesystem-
+    safe transformation of the original URL.
+
+Limitations and notes:
+- Requires Python 3.8+ and the third-party packages `warcio`
+    and `html2text`.
+- HTML→Markdown conversion is best-effort; complex pages may need
+    post-processing.
+- Non-UTF8 bytes are decoded with errors ignored to avoid crashes.
+
+Example usage:
+```
+python markdown_render_html_from_warc.py archive.warc.gz --output-dir markdown_pages
+```
+"""
 import html2text
 import argparse
 
