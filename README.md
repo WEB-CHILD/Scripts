@@ -123,6 +123,31 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
     - Requires `pandas` and `requests` packages. Install with `pip install pandas requests`.
     - Input CSV should have URLs in the first column.
     - **⚠️ Disclaimer**: This script has known timeout issues and may be buggy. The CDX API requests can timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel, or with very large sites.
+- `create_build_ia-harvester_virtual_pyenv.sh`
+  - Description: Helper shell script to create a `pyenv` virtualenv, clone the local development forks of `InternetArchiveExtractor` and `python-wayback-machine-downloader`, build/install the wayback package locally, patch the `InternetArchiveExtractor` requirements to point at the local wayback package, and install dependencies.
+  - Basic usage:
+
+    ```bash
+    # Make executable (if necessary) and run from repository root
+    chmod +x create_build_ia-harvester_virtual_pyenv.sh
+    ./create_build_ia-harvester_virtual_pyenv.sh
+    ```
+
+    The script will create a `pyenv` virtualenv named `IA-Extractor_<folder>` (where `<folder>` is the current directory name), clone the two repos into the current directory, install the local wayback package, and install requirements for `InternetArchiveExtractor`.
+
+  - Features / notes:
+    - Uses `pyenv` + `pyenv-virtualenv` to create and activate a named virtual environment.
+    - Clones `InternetArchiveExtractor` and `python-wayback-machine-downloader` from the project's GitHub forks.
+    - Installs `python-wayback-machine-downloader` locally (`pip install .`) and updates `InternetArchiveExtractor/requirements.txt` to reference the local `pywaybackup` package via a `file://` URL. A backup of `requirements.txt` is created as `requirements.txt.bak` before modification.
+    - Installs `InternetArchiveExtractor` dependencies into the created virtualenv.
+    - Exits on errors (`set -euo pipefail`) and prints progress messages.
+
+  - Requirements / prerequisites:
+    - `pyenv` and `pyenv-virtualenv` installed and configured in your shell.
+    - `git` and `pip` available in PATH.
+    - Ability to build/compile Python (system build tools / headers may be required for some Python versions).
+    - The script uses `PYTHON_VERSION="3.13.7"` by default — change the script if a different interpreter is needed.
+
 
 - `multible_catagory_matcher.sql`
   - Description: SQLite SQL script for matching and categorizing URLs across multiple category labels in the corpus database. Intended to be run interactively inside a SQLite GUI (for example `DB Browser for SQLite`) against the `corpus-120b-wayback_url.db` schema.
