@@ -8,13 +8,14 @@ set -euo pipefail
 PYTHON_VERSION="3.13.7"
 REPO_IAE="https://github.com/WEB-CHILD/InternetArchiveExtractor.git"
 REPO_WAYBACK="https://github.com/WEB-CHILD/python-wayback-machine-downloader.git"
+REPO_WAYBACK_BRANCH="local-main"
 
 # -----------------------------
 # Derived values
 # -----------------------------
 BASE_DIR="$(pwd)"
 FOLDER_NAME="$(basename "$BASE_DIR")"
-VENV_NAME="IA-Extractor_${FOLDER_NAME}"
+VENV_NAME="iah_${FOLDER_NAME}"
 WAYBACK_DIR="${BASE_DIR}/python-wayback-machine-downloader"
 
 # -----------------------------
@@ -22,7 +23,7 @@ WAYBACK_DIR="${BASE_DIR}/python-wayback-machine-downloader"
 # -----------------------------
 echo "Cloning repositories..."
 git clone "$REPO_IAE"
-git clone "$REPO_WAYBACK"
+git clone -b "$REPO_WAYBACK_BRANCH" --single-branch "$REPO_WAYBACK"
 
 # -----------------------------
 # Create and activate virtualenv
