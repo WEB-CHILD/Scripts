@@ -57,6 +57,26 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
   - Notes:
     - MIME types that individually account for less than `--min-percent` percent of the total are grouped into a single "Other" slice.
 
+- `count_warc.py`
+  - Description: Count WARC response records in a WARC/WARC.GZ file using `warcio`'s `ArchiveIterator`.
+  - Basic usage:
+
+    ```bash
+    python3 count_warc.py <input.warc.gz>
+    ```
+
+    Example:
+
+    ```bash
+    python3 count_warc.py example.warc.gz
+    # -> Response records: 12345
+    ```
+
+  - Notes:
+    - Requires the `warcio` package. Install with `pip install warcio`.
+    - The script prints the number of `response` records (common representation of archived HTTP responses).
+    - Works with compressed (`.warc.gz`) and uncompressed WARC files when passed as a filename to the script (if your Python `open()` supports reading the compressed file directly, or use `gunzip -c file.warc.gz | python3 count_warc.py -`).
+
 - `markdown_render_html_from_warc.py`
   - Description: Convert HTML pages in a WARC to Markdown files.
   - Basic usage:
