@@ -142,7 +142,37 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
   - Notes:
     - Requires `pandas` and `requests` packages. Install with `pip install pandas requests`.
     - Input CSV should have URLs in the first column.
-    - **⚠️ Disclaimer**: This script has known timeout issues and may be buggy. The CDX API requests can timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel, or with very large sites.
+    - **Disclaimer**: This script has known timeout issues and may be buggy. The CDX API requests can timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel, or with very large sites.
+
+- `wayback_solrwayback_query_gen.js`
+  - Description: Tampermonkey/UserScript that generates SolrWayback queries from Internet Archive Wayback Machine URLs. When viewing a specific snapshot in the Wayback Machine, it automatically extracts the timestamp and original URL, then opens a corresponding SolrWayback query in a new tab while copying the query to the clipboard.
+  - Installation:
+    1. Install a browser extension that supports UserScripts (e.g., [Tampermonkey](https://www.tampermonkey.net/) for Chrome, Firefox, Edge, or Safari).
+    2. Copy the contents of `wayback_solrwayback_query_gen.js` into a new script in the extension.
+    3. The script will automatically run on any Internet Archive Wayback Machine URL matching `https://web.archive.org/web/*`.
+  
+  - How it works:
+    - Navigate to any snapshot on the Internet Archive Wayback Machine (e.g., `https://web.archive.org/web/20231015120000/https://example.com/`)
+    - A blue "Open in SolrWayback" button will appear at the bottom-right of the page
+    - Clicking the button:
+      - Copies the generated SolrWayback query to your clipboard
+      - Opens the query in SolrWayback (defaults to `http://localhost:8080/solrwayback/search?query=...`)
+  
+  - Prerequisites:
+    - **Critical**: You must have a **SolrWayback instance bootstrapped and running** for this script to work.
+    - SolrWayback can run:
+      - **Locally** on your machine (default: `http://localhost:8080/solrwayback/`)
+      - **On a remote server** (requires port forwarding or SSH tunnel to the server)
+  
+  - Setup instructions:
+      
+    **Custom Configuration**
+    - To change the SolrWayback base URL or port, edit the `SOLRWAYBACK_BASE` variable in the script:
+      ```javascript
+      const SOLRWAYBACK_BASE = "http://localhost:8080/solrwayback/search?query=";
+      ```
+  
+
 - `create_build_ia-harvester_virtual_pyenv.sh`
   - Description: Helper shell script to create a `pyenv` virtualenv, clone the local development forks of `InternetArchiveExtractor` and `python-wayback-machine-downloader`, build/install the wayback package locally, patch the `InternetArchiveExtractor` requirements to point at the local wayback package, and install dependencies.
   - Basic usage:
