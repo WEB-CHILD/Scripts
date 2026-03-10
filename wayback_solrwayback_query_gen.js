@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Wayback to SolrWayback Panel
 // @namespace    solrwayback.panel
-// @version      3.3
-// @description  SolrWayback helper panel for Wayback pages
+// @version      3.4
+// @description  SolrWayback helper panel
 // @match        https://web.archive.org/*
 // @grant        GM_setClipboard
-// @author       Jørn Thøgersen (Web Child - ERC project)
+// @author       Jørn Thøgersen (Web Child - ERC Project)
 // ==/UserScript==
 
 (function() {
@@ -163,38 +163,43 @@ function createPanel(info, queries) {
     panel.style.bottom = "20px";
     panel.style.right = "20px";
     panel.style.width = "300px";
-    panel.style.background = "#ffffff";
-    panel.style.border = "1px solid #d0d0d0";
-    panel.style.borderRadius = "8px";
-    panel.style.boxShadow = "0 6px 18px rgba(0,0,0,0.2)";
-    panel.style.fontFamily = "system-ui, sans-serif";
+    panel.style.background = "#fdfefe";
+    panel.style.border = "1px solid #d6e2f5";
+    panel.style.borderRadius = "10px";
+    panel.style.boxShadow = "0 8px 24px rgba(0,0,0,0.18)";
+    panel.style.fontFamily = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
     panel.style.fontSize = "13px";
     panel.style.zIndex = "999999";
+    panel.style.overflow = "hidden";
 
     const header = document.createElement("div");
 
     header.textContent = "SolrWayback";
-    header.style.padding = "8px 10px";
+
+    header.style.padding = "9px 12px";
     header.style.fontWeight = "600";
-    header.style.background = "#f4f6f8";
-    header.style.borderBottom = "1px solid #e0e0e0";
-    header.style.borderTopLeftRadius = "8px";
-    header.style.borderTopRightRadius = "8px";
+    header.style.background = "#e8f0fe";
+    header.style.color = "#355c9b";
     header.style.cursor = "move";
+    header.style.borderBottom = "1px solid #d6e2f5";
 
     const body = document.createElement("div");
-    body.style.padding = "10px";
+    body.style.padding = "12px";
 
     const url = document.createElement("div");
     url.textContent = normalize(info.original);
+
     url.style.wordBreak = "break-all";
-    url.style.color = "#444";
+    url.style.color = "#374151";
     url.style.marginBottom = "6px";
+    url.style.fontSize = "12.5px";
 
     const time = document.createElement("div");
     time.textContent = human(info.timestamp);
-    time.style.color = "#777";
-    time.style.marginBottom = "10px";
+
+    time.style.color = "#6b7280";
+    time.style.fontSize = "12px";
+    time.style.marginBottom = "12px";
 
     const buttonRow = document.createElement("div");
 
@@ -203,16 +208,19 @@ function createPanel(info, queries) {
         const btn = document.createElement("button");
 
         btn.textContent = label;
-        btn.style.margin = "3px";
-        btn.style.padding = "4px 8px";
-        btn.style.fontSize = "12px";
-        btn.style.border = "1px solid #ccc";
-        btn.style.borderRadius = "4px";
-        btn.style.background = "#fafafa";
-        btn.style.cursor = "pointer";
 
-        btn.onmouseenter = () => btn.style.background = "#f0f0f0";
-        btn.onmouseleave = () => btn.style.background = "#fafafa";
+        btn.style.margin = "3px";
+        btn.style.padding = "5px 9px";
+        btn.style.fontSize = "12px";
+        btn.style.border = "1px solid #c9d7f3";
+        btn.style.borderRadius = "6px";
+        btn.style.background = "#eef4ff";
+        btn.style.cursor = "pointer";
+        btn.style.color = "#355c9b";
+        btn.style.transition = "background 0.15s ease";
+
+        btn.onmouseenter = () => btn.style.background = "#dde9ff";
+        btn.onmouseleave = () => btn.style.background = "#eef4ff";
 
         btn.onclick = handler;
 
@@ -252,7 +260,6 @@ function createPanel(info, queries) {
 function init() {
 
     const info = parseWayback();
-
     if (!info) return;
 
     const queries = buildQueries(info);
