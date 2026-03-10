@@ -1,92 +1,265 @@
 // ==UserScript==
-// @name         Wayback → SolrWayback Query Generator
-// @namespace    local.solrwayback.helper
-// @version      1.1
-// @description  Generate SolrWayback query from Internet Archive URLs
-// @match        https://web.archive.org/web/*
+// @name         Wayback to SolrWayback Panel
+// @namespace    solrwayback.panel
+// @version      3.3
+// @description  SolrWayback helper panel for Wayback pages
+// @match        https://web.archive.org/*
 // @grant        GM_setClipboard
 // @author       Jørn Thøgersen (Web Child - ERC project)
 // ==/UserScript==
 
 (function() {
-    'use strict';
+"use strict";
 
-    const SOLRWAYBACK_BASE = "http://localhost:8080/solrwayback/search?query=";
+const SOLRWAYBACK_BASE = "http://localhost:8080/solrwayback/search?query=";
 
-    function parseWaybackURL() {
-        const match = window.location.href.match(/\/web\/(\d{14})\/(https?:\/\/[^?#]+)/);
-        if (!match) return null;
+function parseWayback() {
 
-        const timestamp = match[1];
-        const originalUrl = match[2];
+    const url = window.location.href;
 
-        return { timestamp, originalUrl };
+    const capture = url.match(/\/web\/(\d{14})\/(https?:\/\/[^?#]+)/);
+
+    if (capture) {
+        return {
+            timestamp: capture[1],
+            original: capture[2]
+        };
     }
 
-    function timestampToISO(ts) {
-        return `${ts.slice(0,4)}-${ts.slice(4,6)}-${ts.slice(6,8)}T${ts.slice(8,10)}:${ts.slice(10,12)}:${ts.slice(12,14)}Z`;
+    const calendar = url.match(/\/web\/\*\/(https?:\/\/[^?#]+)/);
+
+    if (calendar) {
+        return {
+            timestamp: null,
+            original: calendar[1]
+        };
     }
 
-    // Preserve hostname AND port exactly as written
-    function normalizeUrlPreservePort(url) {
-        const m = url.match(/^(https?:\/\/[^\/]+)(\/?.*)$/);
-        if (!m) return url;
+    return null;
+}
 
-        let host = m[1];
-        let path = m[2] || "/";
+function normalize(url) {
 
-        if (!path.endsWith("/")) {
-            path = "/";
-        }
+    const m = url.match(/^(https?:\/\/[^\/]+)(\/?.*)$/);
+    if (!m) return url;
 
-        return host + path;
+    let host = m[1];
+    let path = m[2] || "/";
+
+    if (!path.endsWith("/")) path = "/";
+
+    return host + path;
+}
+
+function iso(ts) {
+
+    if (!ts) return null;
+
+    return `${ts.slice(0,4)}-${ts.slice(4,6)}-${ts.slice(6,8)}T${ts.slice(8,10)}:${ts.slice(10,12)}:${ts.slice(12,14)}Z`;
+}
+
+function human(ts) {
+
+    if (!ts) return "No timestamp";
+
+    const d = new Date(
+        ts.slice(0,4),
+        ts.slice(4,6)-1,
+        ts.slice(6,8),
+        ts.slice(8,10),
+        ts.slice(10,12),
+        ts.slice(12,14)
+    );
+
+    return d.toUTCString();
+}
+
+function baseDomain(hostname) {
+
+    const parts = hostname.split(".");
+    if (parts.length <= 2) return hostname;
+
+    return parts.slice(-2).join(".");
+}
+
+function buildQueries(info) {
+
+    const normalized = normalize(info.original);
+
+    const hostname = (() => {
+        try { return new URL(info.original).hostname; }
+        catch { return null; }
+    })();
+
+    const queries = {};
+
+    if (info.timestamp) {
+
+        const t = iso(info.timestamp);
+
+        queries.exact =
+            `url:"${normalized}" AND crawl_date:"${t}"`;
+
+        queries.nearest =
+            `url:"${normalized}"`;
     }
 
-    function buildSolrQuery(url, isoDate) {
-        return `url:"${url}" AND crawl_date:"${isoDate}"`;
+    if (hostname) {
+
+        const domain = baseDomain(hostname);
+
+        queries.domain =
+            `domain:"${domain}"`;
     }
 
-    function buildFullLink(query) {
-        return SOLRWAYBACK_BASE + encodeURIComponent(query);
+    return queries;
+}
+
+function link(q) {
+    return SOLRWAYBACK_BASE + encodeURIComponent(q);
+}
+
+function makeDraggable(panel, handle) {
+
+    let offsetX = 0;
+    let offsetY = 0;
+    let dragging = false;
+
+    handle.addEventListener("mousedown", e => {
+
+        dragging = true;
+
+        offsetX = e.clientX - panel.offsetLeft;
+        offsetY = e.clientY - panel.offsetTop;
+
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", stop);
+    });
+
+    function move(e) {
+
+        if (!dragging) return;
+
+        panel.style.left = (e.clientX - offsetX) + "px";
+        panel.style.top = (e.clientY - offsetY) + "px";
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
     }
 
-    function addButton(query, link) {
+    function stop() {
+
+        dragging = false;
+
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", stop);
+    }
+}
+
+function createPanel(info, queries) {
+
+    const panel = document.createElement("div");
+
+    panel.style.position = "fixed";
+    panel.style.bottom = "20px";
+    panel.style.right = "20px";
+    panel.style.width = "300px";
+    panel.style.background = "#ffffff";
+    panel.style.border = "1px solid #d0d0d0";
+    panel.style.borderRadius = "8px";
+    panel.style.boxShadow = "0 6px 18px rgba(0,0,0,0.2)";
+    panel.style.fontFamily = "system-ui, sans-serif";
+    panel.style.fontSize = "13px";
+    panel.style.zIndex = "999999";
+
+    const header = document.createElement("div");
+
+    header.textContent = "SolrWayback";
+    header.style.padding = "8px 10px";
+    header.style.fontWeight = "600";
+    header.style.background = "#f4f6f8";
+    header.style.borderBottom = "1px solid #e0e0e0";
+    header.style.borderTopLeftRadius = "8px";
+    header.style.borderTopRightRadius = "8px";
+    header.style.cursor = "move";
+
+    const body = document.createElement("div");
+    body.style.padding = "10px";
+
+    const url = document.createElement("div");
+    url.textContent = normalize(info.original);
+    url.style.wordBreak = "break-all";
+    url.style.color = "#444";
+    url.style.marginBottom = "6px";
+
+    const time = document.createElement("div");
+    time.textContent = human(info.timestamp);
+    time.style.color = "#777";
+    time.style.marginBottom = "10px";
+
+    const buttonRow = document.createElement("div");
+
+    function addButton(label, handler) {
+
         const btn = document.createElement("button");
-        btn.textContent = "Open in SolrWayback";
-        btn.style.position = "fixed";
-        btn.style.bottom = "20px";
-        btn.style.right = "20px";
-        btn.style.zIndex = 9999;
-        btn.style.padding = "8px 14px";
-        btn.style.background = "#1565c0";
-        btn.style.color = "white";
-        btn.style.border = "none";
-        btn.style.borderRadius = "5px";
+
+        btn.textContent = label;
+        btn.style.margin = "3px";
+        btn.style.padding = "4px 8px";
+        btn.style.fontSize = "12px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.borderRadius = "4px";
+        btn.style.background = "#fafafa";
         btn.style.cursor = "pointer";
 
-        btn.onclick = () => {
-            GM_setClipboard(query);
-            window.open(link, "_blank");
-        };
+        btn.onmouseenter = () => btn.style.background = "#f0f0f0";
+        btn.onmouseleave = () => btn.style.background = "#fafafa";
 
-        document.body.appendChild(btn);
+        btn.onclick = handler;
+
+        buttonRow.appendChild(btn);
     }
 
-    function run() {
-        const parsed = parseWaybackURL();
-        if (!parsed) return;
+    if (queries.exact) {
 
-        const isoDate = timestampToISO(parsed.timestamp);
-        const normalizedUrl = normalizeUrlPreservePort(parsed.originalUrl);
+        addButton("Open Exact",
+            () => window.open(link(queries.exact), "_blank"));
 
-        const query = buildSolrQuery(normalizedUrl, isoDate);
-        const link = buildFullLink(query);
+        addButton("Open Nearest",
+            () => window.open(link(queries.nearest), "_blank"));
 
-        console.log("SolrWayback query:", query);
-        console.log("SolrWayback link:", link);
-
-        addButton(query, link);
+        addButton("Copy Query",
+            () => GM_setClipboard(queries.exact));
     }
 
-    run();
+    if (queries.domain) {
+
+        addButton("Open Domain",
+            () => window.open(link(queries.domain), "_blank"));
+    }
+
+    body.appendChild(url);
+    body.appendChild(time);
+    body.appendChild(buttonRow);
+
+    panel.appendChild(header);
+    panel.appendChild(body);
+
+    document.body.appendChild(panel);
+
+    makeDraggable(panel, header);
+}
+
+function init() {
+
+    const info = parseWayback();
+
+    if (!info) return;
+
+    const queries = buildQueries(info);
+
+    createPanel(info, queries);
+}
+
+setTimeout(init, 800);
+
 })();
