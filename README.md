@@ -77,6 +77,19 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
     - The script prints the number of `response` records (common representation of archived HTTP responses).
     - Works with compressed (`.warc.gz`) and uncompressed WARC files when passed as a filename to the script (if your Python `open()` supports reading the compressed file directly, or use `gunzip -c file.warc.gz | python3 count_warc.py -`).
 
+- `validate_warc.py`
+  - Description: Validate the integrity of WARC/WARC.GZ files by checking record digests and reading content streams.
+  - Basic usage:
+
+    ```bash
+    python3 validate_warc.py <input.warc.gz>
+    ```
+  - Notes:
+    - Requires the `warcio` package. Install with `pip install warcio`.
+    - Validates WARC integrity by reading record content streams and checking digests.
+    - Works with both compressed (`.warc.gz`) and uncompressed WARC files.
+
+
 - `markdown_render_html_from_warc.py`
   - Description: Convert HTML pages in a WARC to Markdown files.
   - Basic usage:

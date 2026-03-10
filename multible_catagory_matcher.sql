@@ -1,3 +1,20 @@
+-- multible_catagory_matcher.sql
+--
+-- Purpose: Find results that match a specific set of category IDs
+--          (returns only results that have a 'yes' match for every
+--           category listed in `wanted_categories`).
+--
+-- Usage:
+--   Open this file in a SQLite client (e.g., DB Browser for SQLite)
+--   and run it against the database containing `result`,
+--   `result_category`, and `category` tables. Modify the
+--   `INSERT INTO wanted_categories` values to change the target set.
+--
+-- Notes:
+--   - The script creates a temporary table `wanted_categories` and
+--     selects results that match all listed categories.
+--   - Back up your database before running scripts that modify data.
+--
 DROP TABLE IF EXISTS wanted_categories;
 
 CREATE TEMP TABLE wanted_categories (

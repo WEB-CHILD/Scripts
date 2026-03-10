@@ -1,3 +1,25 @@
+"""harvest_comparator.py
+
+Compare two harvest directories and visualize snapshot distributions.
+
+Usage:
+        python3 harvest_comparator.py <original_dir> <modified_dir>
+
+Description:
+- Collects file statistics and snapshot timestamps (from a
+    `waybackup_snapshots/` directory structure).
+- Generates histograms comparing harvest distributions between the two
+    directories.
+
+Dependencies:
+- pandas
+- matplotlib
+
+Notes:
+- The script is resilient if `waybackup_snapshots` is missing (it will
+    simply skip snapshot-based plots).
+"""
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
