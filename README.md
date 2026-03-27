@@ -158,18 +158,21 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
     - **Disclaimer**: This script has known timeout issues and may be buggy. The CDX API requests can timeout intermittently, especially with large batches of URLs, when processing multiple sites in parallel, or with very large sites.
 
 - `wayback_solrwayback_query_gen.js`
-  - Description: Tampermonkey/UserScript that generates SolrWayback queries from Internet Archive Wayback Machine URLs. When viewing a specific snapshot in the Wayback Machine, it automatically extracts the timestamp and original URL, then opens a corresponding SolrWayback query in a new tab while copying the query to the clipboard.
+  - Description: Tampermonkey/UserScript that adds a draggable SolrWayback helper panel on Internet Archive pages. It extracts timestamp and original URL from Wayback playback URLs and provides quick actions for SolrWayback queries.
   - Installation:
     1. Install a browser extension that supports UserScripts (e.g., [Tampermonkey](https://www.tampermonkey.net/) for Chrome, Firefox, Edge, or Safari).
     2. Copy the contents of `wayback_solrwayback_query_gen.js` into a new script in the extension.
     3. The script will automatically run on any Internet Archive Wayback Machine URL matching `https://web.archive.org/web/*`.
   
   - How it works:
-    - Navigate to any snapshot on the Internet Archive Wayback Machine (e.g., `https://web.archive.org/web/20231015120000/https://example.com/`)
-    - A blue "Open in SolrWayback" button will appear at the bottom-right of the page
-    - Clicking the button:
-      - Copies the generated SolrWayback query to your clipboard
-      - Opens the query in SolrWayback (defaults to `http://localhost:8080/solrwayback/search?query=...`)
+    - Navigate to a Wayback playback URL (example: `https://web.archive.org/web/20231015120000/https://example.com/`)
+    - A floating panel named **SolrWayback** appears in the bottom-right corner
+    - Available actions include:
+      - **Open Exact**: opens `url + crawl_date` query in SolrWayback
+      - **Open Nearest**: opens `url` query in SolrWayback
+      - **Copy Query**: copies the exact query string to clipboard
+      - **Open Domain**: opens a domain-level SolrWayback query
+    - The panel can be dragged by its header
   
   - Prerequisites:
     - **Critical**: You must have a **SolrWayback instance bootstrapped and running** for this script to work.
@@ -184,6 +187,27 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
       ```javascript
       const SOLRWAYBACK_BASE = "http://localhost:8080/solrwayback/search?query=";
       ```
+
+- `solrwayback-playback_to_wayback_link.js`
+  - Description: Tampermonkey/UserScript that adds an **Open in Wayback** button when you view local SolrWayback playback pages. It converts the SolrWayback playback URL into the equivalent Internet Archive playback URL and opens it in a new tab.
+  - Installation:
+    1. Install a browser extension that supports UserScripts (e.g., [Tampermonkey](https://www.tampermonkey.net/)).
+    2. Copy the contents of `solrwayback-playback_to_wayback_link.js` into a new script in the extension.
+    3. The script runs on local playback paths matching:
+       - `http://localhost:8080/solrwayback/services/web/*`
+       - `https://localhost:8080/solrwayback/services/web/*`
+       - `http://127.0.0.1:8080/solrwayback/services/web/*`
+       - `https://127.0.0.1:8080/solrwayback/services/web/*`
+
+  - How it works:
+    - Open a local SolrWayback playback URL, for example:
+      - `http://localhost:8080/solrwayback/services/web/20021220002707//http://naver.atriax.dk:80/`
+    - The script extracts:
+      - the 14-digit capture timestamp
+      - the original URL after the timestamp
+    - It builds the matching Internet Archive URL:
+      - `https://web.archive.org/web/<timestamp>/<original-url>`
+    - Click **Open in Wayback** to open that URL in a new browser tab.
   
 
 - `create_build_ia-harvester_virtual_pyenv.sh`
