@@ -191,7 +191,7 @@ This repository stores small utility scripts used by the WEBCHILD project. Each 
 - `solrwayback-playback_to_wayback_link.js`
   - Description: Tampermonkey/UserScript that adds an **Open in Wayback** button when you view local SolrWayback playback pages. It converts the SolrWayback playback URL into the equivalent Internet Archive playback URL and opens it in a new tab.
   - Installation:
-    1. Install a browser extension that supports UserScripts (e.g., [Tampermonkey](https://www.tampermonkey.net/)).
+    1. Install a browser extension that supports UserScripts (e.g., [Tampermonkey](https://www.tampermonkey.net/)). Free for most browsers.
     2. Copy the contents of `solrwayback-playback_to_wayback_link.js` into a new script in the extension.
     3. The script runs on local playback paths matching:
        - `http://localhost:8080/solrwayback/services/web/*`
