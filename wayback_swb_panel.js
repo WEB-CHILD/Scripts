@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wayback to SolrWayback Panel
 // @namespace    solrwayback.panel
-// @version      3.4
+// @version      3.5
 // @description  SolrWayback helper panel
 // @match        https://web.archive.org/*
 // @grant        GM_setClipboard
@@ -17,7 +17,7 @@ function parseWayback() {
 
     const url = window.location.href;
 
-    const capture = url.match(/\/web\/(\d{14})\/(https?:\/\/[^?#]+)/);
+    const capture = url.match(/\/web\/(\d{14})\/(https?:\/\/[^#\s]+)/);
 
     if (capture) {
         return {
@@ -26,7 +26,7 @@ function parseWayback() {
         };
     }
 
-    const calendar = url.match(/\/web\/\*\/(https?:\/\/[^?#]+)/);
+    const calendar = url.match(/\/web\/\*\/(https?:\/\/[^#\s]+)/);
 
     if (calendar) {
         return {
@@ -40,15 +40,15 @@ function parseWayback() {
 
 function normalize(url) {
 
-    const m = url.match(/^(https?:\/\/[^\/]+)(\/?.*)$/);
-    if (!m) return url;
+    try {
+        const parsed = new URL(url);
+        const path = parsed.pathname || "/";
 
-    let host = m[1];
-    let path = m[2] || "/";
-
-    if (!path.endsWith("/")) path = "/";
-
-    return host + path;
+        return `${parsed.protocol}//${parsed.host}${path}${parsed.search}`;
+    }
+    catch {
+        return url;
+    }
 }
 
 function iso(ts) {
