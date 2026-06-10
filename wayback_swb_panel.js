@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wayback to SolrWayback Panel
 // @namespace    solrwayback.panel
-// @version      3.5
+// @version      3.6
 // @description  SolrWayback helper panel
 // @match        https://web.archive.org/*
 // @grant        GM_setClipboard
@@ -51,6 +51,28 @@ function normalize(url) {
     }
 }
 
+function normalizeWithDefaultPort(url) {
+
+    try {
+        const parsed = new URL(url);
+        const path = parsed.pathname || "/";
+
+        let port = parsed.port;
+
+        if (!port) {
+            if (parsed.protocol === "http:") port = "80";
+            else if (parsed.protocol === "https:") port = "443";
+        }
+
+        const host = port ? `${parsed.hostname}:${port}` : parsed.hostname;
+
+        return `${parsed.protocol}//${host}${path}${parsed.search}`;
+    }
+    catch {
+        return url;
+    }
+}
+
 function iso(ts) {
 
     if (!ts) return null;
@@ -85,6 +107,7 @@ function baseDomain(hostname) {
 function buildQueries(info) {
 
     const normalized = normalize(info.original);
+    const normalizedWithDefaultPort = normalizeWithDefaultPort(info.original);
 
     const hostname = (() => {
         try { return new URL(info.original).hostname; }
@@ -97,8 +120,12 @@ function buildQueries(info) {
 
         const t = iso(info.timestamp);
 
+        const exactUrlClause = normalizedWithDefaultPort !== normalized
+            ? `(url:"${normalized}" OR url:"${normalizedWithDefaultPort}")`
+            : `url:"${normalized}"`;
+
         queries.exact =
-            `url:"${normalized}" AND crawl_date:"${t}"`;
+            `${exactUrlClause} AND crawl_date:"${t}"`;
 
         queries.nearest =
             `url:"${normalized}"`;
