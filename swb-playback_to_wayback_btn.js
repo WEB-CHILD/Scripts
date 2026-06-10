@@ -45,48 +45,67 @@
 	}
 
 	function createOpenButton(waybackUrl) {
-		const existing = document.getElementById("swb-wayback-button");
+		const existing = document.getElementById("swb-wayback-button-host");
 		if (existing) {
 			return;
 		}
 
-		const button = document.createElement("button");
+		// Use a Shadow DOM host so the button's styles are completely isolated
+		// from the archived page's CSS (including frameset pages).
+		const host = document.createElement("div");
+		host.id = "swb-wayback-button-host";
 
-		button.id = "swb-wayback-button";
+		const hs = host.style;
+		hs.setProperty("all", "initial", "important");
+		hs.setProperty("position", "fixed", "important");
+		hs.setProperty("bottom", "20px", "important");
+		hs.setProperty("right", "20px", "important");
+		hs.setProperty("top", "auto", "important");
+		hs.setProperty("left", "auto", "important");
+		hs.setProperty("z-index", "2147483647", "important");
+		hs.setProperty("display", "block", "important");
+		hs.setProperty("visibility", "visible", "important");
+		hs.setProperty("opacity", "1", "important");
+		hs.setProperty("pointer-events", "auto", "important");
+
+		const shadow = host.attachShadow({ mode: "closed" });
+
+		const style = document.createElement("style");
+		style.textContent = `
+			button {
+				display: block;
+				padding: 10px 14px;
+				border: 1px solid #2f4f90;
+				border-radius: 8px;
+				background: #3b67bd;
+				color: #ffffff;
+				font-size: 13px;
+				font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+				font-weight: 600;
+				cursor: pointer;
+				box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+				transition: transform 0.15s ease, background 0.15s ease;
+			}
+			button:hover {
+				background: #3258a2;
+				transform: translateY(-1px);
+			}
+		`;
+
+		const button = document.createElement("button");
 		button.textContent = "Open in Wayback";
 		button.title = waybackUrl;
-
-		button.style.position = "fixed";
-		button.style.bottom = "20px";
-		button.style.right = "20px";
-		button.style.zIndex = "999999";
-		button.style.padding = "10px 14px";
-		button.style.border = "1px solid #2f4f90";
-		button.style.borderRadius = "8px";
-		button.style.background = "#3b67bd";
-		button.style.color = "#ffffff";
-		button.style.fontSize = "13px";
-		button.style.fontFamily = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
-		button.style.fontWeight = "600";
-		button.style.cursor = "pointer";
-		button.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.2)";
-		button.style.transition = "transform 0.15s ease, background 0.15s ease";
-
-		button.addEventListener("mouseenter", () => {
-			button.style.background = "#3258a2";
-			button.style.transform = "translateY(-1px)";
-		});
-
-		button.addEventListener("mouseleave", () => {
-			button.style.background = "#3b67bd";
-			button.style.transform = "translateY(0)";
-		});
 
 		button.addEventListener("click", () => {
 			window.open(waybackUrl, "_blank", "noopener,noreferrer");
 		});
 
-		document.body.appendChild(button);
+		shadow.appendChild(style);
+		shadow.appendChild(button);
+
+		// Append to <html> rather than <body> so the host sits above frameset
+		// frames, which otherwise cover the entire viewport.
+		document.documentElement.appendChild(host);
 	}
 
 	function init() {
