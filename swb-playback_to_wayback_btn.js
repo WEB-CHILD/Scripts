@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SolrWayback Playback to Wayback Link
 // @namespace    solrwayback.to.wayback
-// @version      1.0
+// @version      1.2
 // @description  Adds a button that opens the equivalent Internet Archive playback URL
 // @match        http://localhost:8080/solrwayback/services/web/*
 // @match        https://localhost:8080/solrwayback/services/web/*
