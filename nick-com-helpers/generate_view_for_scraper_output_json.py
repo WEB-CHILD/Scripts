@@ -466,7 +466,8 @@ function filt() {{
 
 # ── Main generation ──────────────────────────────────────────────────────────
 
-json_files = sorted(f for f in os.listdir(FOLDER) if f.endswith(".json") and f != "manifest.json")
+_BOARD_FILE_RE = re.compile(r"^\d+_y-\d+_bid-\d+_crawl-\d+_.+\.json$")
+json_files = sorted(f for f in os.listdir(FOLDER) if _BOARD_FILE_RE.match(f))
 
 entries = []
 for filename in json_files:
