@@ -1,14 +1,13 @@
 """Extract post content from JSON board files into a CSV for topic modelling."""
 
+import argparse
 import csv
+import datetime
 import glob
 import json
 import os
 import re
 import sys
-
-INPUT_DIR = "output_your_world_threaded4_4_no_dups"
-OUTPUT_CSV = "data/posts.csv"
 
 
 def parse_filename(filename):
@@ -27,7 +26,15 @@ def parse_filename(filename):
 
 
 def main():
-    files = sorted(glob.glob(os.path.join(INPUT_DIR, "*.json")))
+    parser = argparse.ArgumentParser(description="Extract posts from JSON board files into CSV for topic modelling.")
+    parser.add_argument("input_dir", help="Directory containing JSON board files")
+    parser.add_argument("output_dir", help="Directory to write output CSV")
+    args = parser.parse_args()
+
+    today = datetime.date.today().strftime("%Y%m%d")
+    output_csv = os.path.join(args.output_dir, f"{today}_nick_message_board_posts_for_topic_modelling_input.csv")
+
+    files = sorted(glob.glob(os.path.join(args.input_dir, "*.json")))
     files = [f for f in files if not os.path.basename(f).startswith("index")]
 
     rows = []
@@ -60,14 +67,14 @@ def main():
                         "url": meta.get("playback_url", ""),
                     })
 
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
     fieldnames = ["id", "content", "year", "board", "board_id", "crawl_date", "subject", "author", "date", "url"]
-    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as fh:
+    with open(output_csv, "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Wrote {len(rows)} posts to {OUTPUT_CSV}")
+    print(f"Wrote {len(rows)} posts to {output_csv}")
 
 
 if __name__ == "__main__":

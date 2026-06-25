@@ -4,6 +4,7 @@ import argparse
 import html
 import json
 import re
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -42,14 +43,23 @@ def extract_thread_links(board_url: str, text: str) -> list[str]:
     return thread_links
 
 
+def _log(msg: str) -> None:
+    print(msg, flush=True)
+
+
 def has_msg_content(board_url: str, board_text: str) -> bool:
-    for thread_url in extract_thread_links(board_url, board_text):
+    thread_urls = extract_thread_links(board_url, board_text)
+    for i, thread_url in enumerate(thread_urls, 1):
+        _log(f"    thread {i}/{len(thread_urls)}: {thread_url}")
         try:
             thread_text = fetch_text(thread_url)
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+            _log(f"      -> fetch error: {e}")
             continue
         if not is_never_harvested(thread_text):
+            _log(f"      -> has content")
             return True
+        _log(f"      -> never harvested")
     return False
 
 
@@ -57,21 +67,32 @@ def fill_entries(entries: list[dict]) -> int:
     updated = 0
     board_cache: dict[str, tuple[bool, bool]] = {}
 
-    for entry in entries:
-        if 'has_playback' in entry and 'has_msg_content' in entry:
-            continue
+    needs_update = [e for e in entries if 'has_playback' not in e or 'has_msg_content' not in e]
+    total = len(needs_update)
+    _log(f"{len(entries)} total entries, {total} need updating, {len(entries) - total} already filled")
 
+    for idx, entry in enumerate(needs_update, 1):
         board_url = entry['board_link']
+        _log(f"\n[{idx}/{total}] {board_url}")
+
         if board_url in board_cache:
             playback, msg_content = board_cache[board_url]
+            _log(f"  -> cached: has_playback={playback}, has_msg_content={msg_content}")
         else:
             try:
                 board_text = fetch_text(board_url)
                 playback = not is_never_harvested(board_text)
-                msg_content = playback and has_msg_content(board_url, board_text)
-            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+                if playback:
+                    _log(f"  board reachable, checking threads for content...")
+                    msg_content = has_msg_content(board_url, board_text)
+                else:
+                    msg_content = False
+                    _log(f"  board never harvested")
+            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+                _log(f"  fetch error: {e}")
                 playback = False
                 msg_content = False
+            _log(f"  -> has_playback={playback}, has_msg_content={msg_content}")
             board_cache[board_url] = (playback, msg_content)
 
         entry['has_playback'] = playback

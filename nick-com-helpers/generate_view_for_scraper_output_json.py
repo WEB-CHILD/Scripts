@@ -32,14 +32,22 @@ Safe to re-run at any time — all output files are overwritten. Add new .json
 files to the folder and re-run to pick them up.
 """
 
+import argparse
 import json
 import os
 import re
 import html as htmllib
 from pathlib import Path
 
-FOLDER = Path(__file__).parent
-OUT_DIR = FOLDER / "viewer"
+_parser = argparse.ArgumentParser(description="Generate HTML viewer from scraped JSON files.")
+_parser.add_argument("--folder", default=None, metavar="DIR",
+                     help="Folder containing .json files (default: script directory)")
+_parser.add_argument("--output-dir", default=None, metavar="DIR",
+                     help="Output directory for viewer (default: <folder>/viewer)")
+_args = _parser.parse_args()
+
+FOLDER = Path(_args.folder).resolve() if _args.folder else Path(__file__).parent
+OUT_DIR = Path(_args.output_dir).resolve() if _args.output_dir else FOLDER / "viewer"
 BOARDS_DIR = OUT_DIR / "boards"
 OUT_DIR.mkdir(exist_ok=True)
 BOARDS_DIR.mkdir(exist_ok=True)
