@@ -1,17 +1,35 @@
 import csv
 import os
+import glob
 import argparse
 
-INPUT_FILE = "20260625_nick_message_board_posts_for_topic_modelling_input.csv"
-OUTPUT_FILE = "20260625_nick_message_board_posts_for_topic_modelling_deduped.csv"
+INPUT_GLOB = "*_nick_message_board_posts_for_topic_modelling_input.csv"
 
 parser = argparse.ArgumentParser(description="Deduplicate message board posts by exact content match.")
 parser.add_argument("--input-dir", default=os.path.dirname(os.path.abspath(__file__)))
 parser.add_argument("--output-dir", default=os.path.dirname(os.path.abspath(__file__)))
+parser.add_argument(
+    "--input-file",
+    help="Specific posts CSV to dedupe (overrides auto-discovery of the latest "
+         "*_input.csv in --input-dir)",
+)
 args = parser.parse_args()
 
-input_path = os.path.join(args.input_dir, INPUT_FILE)
-output_path = os.path.join(args.output_dir, OUTPUT_FILE)
+if args.input_file:
+    input_path = (
+        args.input_file if os.path.isabs(args.input_file)
+        else os.path.join(args.input_dir, args.input_file)
+    )
+else:
+    # Date-prefixed filenames sort chronologically, so the last match is newest.
+    candidates = sorted(glob.glob(os.path.join(args.input_dir, INPUT_GLOB)))
+    if not candidates:
+        parser.error(f"No file matching {INPUT_GLOB!r} found in {args.input_dir}")
+    input_path = candidates[-1]
+
+# Mirror the input's date prefix in the deduped output name.
+output_name = os.path.basename(input_path).replace("_input.csv", "_deduped.csv")
+output_path = os.path.join(args.output_dir, output_name)
 
 seen_content = set()
 rows_kept = 0
@@ -33,6 +51,7 @@ with open(input_path, newline="", encoding="utf-8") as infile, \
         else:
             rows_dropped += 1
 
+print(f"Input file:  {input_path}")
 print(f"Input rows:  {rows_kept + rows_dropped:,}")
 print(f"Kept:        {rows_kept:,}")
 print(f"Duplicates:  {rows_dropped:,}")
