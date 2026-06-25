@@ -34,8 +34,9 @@ def main():
     today = datetime.date.today().strftime("%Y%m%d")
     output_csv = os.path.join(args.output_dir, f"{today}_nick_message_board_posts_for_topic_modelling_input.csv")
 
-    files = sorted(glob.glob(os.path.join(args.input_dir, "*.json")))
-    files = [f for f in files if not os.path.basename(f).startswith("index")]
+    _board_re = re.compile(r"^\d+_y-\d+_bid-\d+_crawl-\d+_.+\.json$")
+    files = sorted(f for f in glob.glob(os.path.join(args.input_dir, "*.json"))
+                   if _board_re.match(os.path.basename(f)))
 
     rows = []
     for filepath in files:
